@@ -1,0 +1,30 @@
+
+type Query {
+    allUsers: [User]
+    allBlogs: [Blog!]!
+    blogsByUserId(userId: Int!): [Blog!]!
+    userById(id: Int!): User
+}
+
+type Mutation {
+    createUser(username: String!, email: String!, passwordHash: String!): User!
+    createBlog(title: String!, content: String!, userId: Int!): Blog!
+}
+
+type User {
+    id: Int!
+    username: String!
+    email: String!
+    passwordHash: String!
+    createdAt: String
+    updatedAt: String
+    blogs: [Blog!]!
+}
+
+type Blog {
+    id: Int!
+    title: String!
+    content: String!
+    createdAt: String
+    updatedAt: String
+}

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users and Blogs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #f4f6f8;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --padding: 20px;
+            --border-radius: 8px;
+            --max-width: 1200px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background: var(--primary-color);
+            color: #fff;
+            padding: var(--padding);
+            text-align: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--padding);
+        }
+
+        .card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 6px var(--shadow-color);
+            padding: var(--padding);
+            margin-bottom: var(--padding);
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 8px var(--shadow-color);
+            transform: scale(1.02);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+
+        .card p {
+            margin: 10px 0;
+        }
+
+        .card p strong {
+            color: var(--primary-color);
+        }
+
+        .card .blog {
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>User and Blog Information</h1>
+</header>
+
+<div class="container" id="user-container">
+    <!-- Data will be loaded here -->
+</div>
+
+<script>
+    async function fetchData() {
+        const query = `
+                query {
+                    allUsers {
+                        id
+                        username
+                        email
+                        createdAt
+                        updatedAt
+                        blogs {
+                            id
+                            title
+                            content
+                            createdAt
+                            updatedAt
+                        }
+                    }
+                }
+            `;
+
+        const response = await fetch('http://localhost:8080/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ query })
+        });
+
+        const result = await response.json();
+        displayData(result.data.allUsers);
+    }
+
+    function displayData(users) {
+        const container = document.getElementById('user-container');
+        container.innerHTML = '';
+
+        if (!users || users.length === 0) {
+            container.innerHTML = '<p class="no-data">No users found.</p>';
+            return;
+        }
+
+        users.forEach(user => {
+            const userCard = document.createElement('div');
+            userCard.className = 'card';
+            userCard.innerHTML = `
+                    <h2>${user.username}</h2>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>Created At:</strong> ${user.createdAt}</p>
+                    <p><strong>Updated At:</strong> ${user.updatedAt || 'Never'}</p>
+                    <h3>Blogs:</h3>
+                    ${user.blogs.length > 0 ? user.blogs.map(blog => `
+                        <div class="blog">
+                            <h4>${blog.title}</h4>
+                            <p><strong>Content:</strong> ${blog.content}</p>
+                            <p><strong>Created At:</strong> ${blog.createdAt}</p>
+                            <p><strong>Updated At:</strong> ${blog.updatedAt || 'Never'}</p>
+                        </div>
+                    `).join('') : '<p class="no-data">No blogs available.</p>'}
+                `;
+            container.appendChild(userCard);
+        });
+    }
+
+    fetchData();
+</script>
+</body>
+</html>

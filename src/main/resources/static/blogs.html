@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogs - User and Blog Information</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="blogs.html">Blogs</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <section id="blog-container">
+        <h1>Blogs</h1>
+        <!-- Blog data will be loaded here -->
+    </section>
+</main>
+
+<script>
+    async function fetchBlogs() {
+        const query = `
+                query {
+                    allBlogs {
+                        id
+                        title
+                        content
+                        createdAt
+                        updatedAt
+                    }
+                }
+            `;
+
+        const response = await fetch('http://localhost:8080/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ query })
+        });
+
+        const result = await response.json();
+        displayBlogs(result.data.allBlogs);
+    }
+
+    function displayBlogs(blogs) {
+        const container = document.getElementById('blog-container');
+        container.innerHTML = '';
+
+        if (!blogs || blogs.length === 0) {
+            container.innerHTML = '<p class="no-data">No blogs found.</p>';
+            return;
+        }
+
+        blogs.forEach(blog => {
+            const blogCard = document.createElement('div');
+            blogCard.className = 'card';
+            blogCard.innerHTML = `
+                    <h2>${blog.title}</h2>
+                    <p><strong>Content:</strong> ${blog.content}</p>
+                    <p><strong>Created At:</strong> ${blog.createdAt}</p>
+                    <p><strong>Updated At:</strong> ${blog.updatedAt || 'Never'}</p>
+                `;
+            container.appendChild(blogCard);
+        });
+    }
+
+    fetchBlogs();
+</script>
+</body>
+</html>
